@@ -1,11 +1,18 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const aiResponse = async(req,res)=>{
-
-  const  codeSnippet  = req.body.codeSnippet
-  const prompt = `You are an experienced code reviewer. Analyze code and provide practical feedback.
+const aiResponse = async(req,res,next)=>{
+  try {
+    const  codeSnippet  = req.body.codeSnippet
+    
+    // Validate input BEFORE using it
+    if(!codeSnippet || codeSnippet.trim() === ''){
+      res.status(400)
+      throw new Error('Please enter the code to review')
+    }
+    
+    const prompt = `You are an experienced code reviewer. Analyze code and provide practical feedback.
 Your Job
 
 Find Issues
@@ -80,17 +87,17 @@ code provided from the user
 ${codeSnippet}
 
 `
-  if(!codeSnippet){
-    res.status(404)
-    throw new Error('Enter the code')
+    
+    console.log('Reviewing code snippet...')
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
+    console.log('Review completed');
+    res.status(200).json(response.text)
+  } catch (error) {
+    next(error)
   }
-  console.log(codeSnippet)
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  console.log(response.text);
-  res.status(200).json(response.text)
 }
 
 export default aiResponse

@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, isPending } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { ReviewText } from './ReviewService';
 
 const initialState = {
@@ -13,7 +13,13 @@ const initialState = {
 const ReviewSlice = createSlice({
   name: 'review',
   initialState,
-  reducers: {},
+  reducers: {
+    clearReview: (state) => {
+      state.review = null
+      state.isError = false
+      state.message = ''
+    },
+  },
   extraReducers:(builder)=>{
     builder
     .addCase(reviewText.pending,(state,action)=>{
@@ -28,7 +34,7 @@ const ReviewSlice = createSlice({
       state.isError=false
     })
     .addCase(reviewText.rejected,(state,action)=>{
-      state.isLoading=true
+      state.isLoading=false
       state.isSuccess=false
       state.isError=true
       state.message=action.payload
@@ -36,7 +42,7 @@ const ReviewSlice = createSlice({
   }
 });
 
-export const {} = ReviewSlice.actions
+export const { clearReview } = ReviewSlice.actions
 
 export default ReviewSlice.reducer
 
@@ -44,7 +50,7 @@ export const reviewText=createAsyncThunk('FETCH/RESPONSE',async(codeSnippet,thun
 try {
   return await ReviewText(codeSnippet)
 } catch (error) {
-  let message = error.response.data.message
+  const message = error.response?.data?.message ?? error.message ?? 'Request failed. Please try again.'
   return thunkAPI.rejectWithValue(message)
 }
 })

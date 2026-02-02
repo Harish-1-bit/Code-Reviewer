@@ -1,28 +1,21 @@
-  "use client"
+import { useState } from "react"
+import {
+  AlertCircle,
+  CheckCircle,
+  Copy,
+  Moon,
+  RefreshCw,
+  Sun,
+  Code,
+  TrendingUp,
+  Play,
+} from "lucide-react"
+import { useDispatch, useSelector } from "react-redux"
+import { reviewText, clearReview } from "../features/review/ReviewSlice"
 
-  import { useState } from "react"
-  import {
-    AlertCircle,
-    CheckCircle,
-    Copy,
-    Moon,
-    RefreshCw,
-    Sun,
-    AlertTriangle,
-    Info,
-    Code,
-    TrendingUp,
-    Lock,
-    Zap,
-    FileCode,
-    Play,
-  } from "lucide-react"
-  import { useDispatch, useSelector } from "react-redux"
-  import { reviewText } from "../features/review/ReviewSlice"
-
-  export default function Page() {
-    const {review,isLoading}=useSelector(state=>state.review)
-      const dispatch = useDispatch()
+export default function Page() {
+  const { review, isLoading, isError, message } = useSelector(state => state.review)
+  const dispatch = useDispatch()
     const [isDark, setIsDark] = useState(true)
     const [codeSnippet, setCodeSnippet] = useState("")
     const [language, setLanguage] = useState("javascript")
@@ -41,10 +34,11 @@
         setShowResults(true)
     }
 
-    const handleReset = (e) => {
-      setCode("")
+    const handleReset = () => {
+      setCodeSnippet("")
       setShowResults(false)
       setLineCount(0)
+      dispatch(clearReview())
     }
 
     
@@ -126,15 +120,23 @@
                       </span>
                     </div>
 
+                    {isError && (
+                      <div className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+                        {message}
+                      </div>
+                    )}
                     <div className="flex gap-3">
                       <button
                         type="submit"
+                        disabled={!codeSnippet.trim() || isLoading}
                         className="flex-1 rounded-lg bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       >
                         <Play className="h-4 w-4" />
-                        Submit for Review
+                        {isLoading ? 'Reviewing...' : 'Submit for Review'}
                       </button>
                       <button
+                        type="button"
+                        onClick={handleReset}
                         disabled={!codeSnippet && !showResults}
                         className="rounded-lg border border-border bg-card px-4 py-2 font-medium hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                       >
@@ -175,14 +177,15 @@
 
                       <div className="space-y-4 h-auto">
                         <div className="overflow-x-auto rounded-lg border border-border bg-background p-4">
-                          <pre className="font-mono text-sm text-muted-foreground">
-                            <code>{isLoading? "Reviewing Your Code":review }</code>
+                          <pre className="whitespace-pre-wrap font-mono text-sm text-muted-foreground">
+                            <code>{isLoading ? 'Reviewing Your Code...' : (typeof review === 'string' ? review : review?.text ?? String(review ?? ''))}</code>
                           </pre>
                         </div>
 
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(optimizedCode)
+                            const textToCopy = typeof review === 'string' ? review : review?.text ?? String(review ?? '')
+                            navigator.clipboard.writeText(textToCopy)
                           }}
                           className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 font-medium hover:bg-muted transition-colors"
                         >

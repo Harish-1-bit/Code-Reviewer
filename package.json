@@ -1,11 +1,12 @@
 {
-  "name": "ai",
+  "name": "code-reviewer",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "AI-powered code review tool",
+  "main": "server/server.js",
   "type": "module",
   "scripts": {
     "dev": "node --watch --env-file=.env server/server.js",
+    "start": "node --env-file=.env server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,6 +17,7 @@
     "@huggingface/transformers": "^3.8.1",
     "@tailwindcss/vite": "^4.1.18",
     "colors": "^1.4.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "openai": "^6.16.0",
